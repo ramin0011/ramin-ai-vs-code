@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (selectedText) {
           try {
             const response = await axios.post(
-              `https://localhost:7116/ai`,
+              `http://localhost:5134/ai`,
               { input: selectedText },
               {
                 httpsAgent: new https.Agent({
