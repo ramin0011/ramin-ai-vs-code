@@ -14,39 +14,41 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  let aiCommand = vscode.commands.registerCommand(
-    "extension.askAI",
-    async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor) {
-        const selection = editor.selection;
-        const selectedText = editor.document.getText(selection);
+  let aiCommand = vscode.commands.registerCommand("extension.askAI", async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      const selection = editor.selection;
+      const selectedText = editor.document.getText(selection);
 
-        if (selectedText) {
-          try {
-            const response = await axios.post(
-              `http://localhost:5134/ai`,
-              { input: selectedText },
-              {
-                httpsAgent: new https.Agent({
-                  rejectUnauthorized: false,
-                }),
-              }
-            );
-            vscode.window.showInformationMessage(
-              `AI Response: ${response.data}`
-            );
-          } catch (error: any) {
-            vscode.window.showErrorMessage(
-              `Failed to contact AI: ${error.message}`
-            );
-          }
-        } else {
-          vscode.window.showWarningMessage("No text selected!");
+      if (selectedText) {
+        try {
+          const response = await axios.post(
+            `http://localhost:5134/ai`,
+            { input: selectedText },
+            {
+              httpsAgent: new https.Agent({
+                rejectUnauthorized: false,
+              }),
+            }
+          );
+
+          // Create a new text document and display the AI response
+          const doc = await vscode.workspace.openTextDocument({
+            content: `AI Response:\n\n${response.data}`,
+          });
+
+          await vscode.window.showTextDocument(doc, {
+            preview: false,
+          });
+
+        } catch (error: any) {
+          vscode.window.showErrorMessage(`Failed to contact AI: ${error.message}`);
         }
+      } else {
+        vscode.window.showWarningMessage("No text selected!");
       }
     }
-  );
+  });
 
   context.subscriptions.push(aiCommand);
   context.subscriptions.push(disposable);
