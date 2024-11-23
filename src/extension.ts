@@ -21,28 +21,39 @@ export function activate(context: vscode.ExtensionContext) {
       const selectedText = editor.document.getText(selection);
 
       if (selectedText) {
-        try {
-          const response = await axios.post(
-            `http://localhost:5134/ai`,
-            { input: selectedText },
-            {
-              httpsAgent: new https.Agent({
-                rejectUnauthorized: false,
-              }),
-            }
-          );
+        const prompt = await vscode.window.showInputBox({
+          placeHolder: "Enter your prompt...",
+        });
 
-          // Create a new text document and display the AI response
-          const doc = await vscode.workspace.openTextDocument({
-            content: `AI Response:\n\n${response.data}`,
-          });
+        if (prompt) {
+          const fullText = `${prompt}\n\n${selectedText}`;
 
-          await vscode.window.showTextDocument(doc, {
-            preview: false,
-          });
+          try {
+            const response = await axios.post(
+              `http://localhost:5134/ai`,
+              { input: fullText },
+              {
+                httpsAgent: new https.Agent({
+                  rejectUnauthorized: false,
+                }),
+              }
+            );
 
-        } catch (error: any) {
-          vscode.window.showErrorMessage(`Failed to contact AI: ${error.message}`);
+            // Create a new text document and display the AI response
+            const docContent = `Prompt:\n\n${prompt}\n\nSelected Text:\n\n${selectedText}\n\nAI Response:\n\n${response.data}`;
+            const doc = await vscode.workspace.openTextDocument({
+              content: docContent,
+            });
+
+            await vscode.window.showTextDocument(doc, {
+              preview: false,
+            });
+
+          } catch (error: any) {
+            vscode.window.showErrorMessage(`Failed to contact AI: ${error.message}`);
+          }
+        } else {
+          vscode.window.showWarningMessage("Prompt cannot be empty!");
         }
       } else {
         vscode.window.showWarningMessage("No text selected!");
