@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
             );
 
             // Create a new text document and display the AI response
-            const docContent = `Prompt:\n\n${prompt}\n\nSelected Text:\n\n${selectedText}\n\nAI Response:\n\n${response.data}`;
+            const docContent = `${response.data}`;
             const doc = await vscode.workspace.openTextDocument({
               content: docContent,
             });
